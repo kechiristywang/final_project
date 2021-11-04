@@ -5,7 +5,7 @@ Differential Gene Expression in TCGA within Stage A Chronic Lymphocytic Leukemia
 Ke Wang
 ## Overview of project
 I will identify differentially expressed genes between Chronic Lymphocytic Leukemia for progression and stable patients. 
-This analysis will utilize the package DeSEQ2 and follow the specific vignette: http://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html. For this analysis, I'll use the TCGA cohort and have identified 205 Ht-seq counts files for tumors that fit within my cohort with 48 progression patients and 157 stable patients. Within the analysis, I will control for race, ethnicity, and gender.
+This analysis will utilize the package DeSEQ2 and follow the specific vignette: http://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html. For this analysis, I'll use the TCGA cohort and have identified 205 Ht-seq counts files for tumors that fit within my cohort with 48 progression patients and 157 stable patients. Within the analysis, I will control for age and gender.
 ## Data
 I will use the data from https://dcc.icgc.org/search. Examining clinical data, there are 205 tumor samples, and 48 are defined by me as progression patients and 157 are identified as stable patients. The specific files are available in rawdata.tsv.
 ## Milestone 1
