@@ -11,10 +11,11 @@ I will use the data from https://dcc.icgc.org/search. Examining clinical data, t
 ## Milestone 1
 Due Date: Thursday November 11th
 
-I will integrate the data of eligible progression and stable patients into a tsv. 
+I will integrate the data of eligible progression and stable patients into a tsv. Data fully loaded into vignette through HT-SEQ steps. I will complete an entire first draft of analysis analyzed through the vignette.
 ## Milestone 2
 Due Date: Tuesday November 23rd
 
+An initial completion of vignette. I will complete an entire first draft of analysis analyzed through the vignette. Complete the data analysis and begin to describe the analysis results.
 
 ## Deliverable
 Due Date: December 3rd
