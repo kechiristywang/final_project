@@ -15,7 +15,7 @@ I will integrate the data of eligible progression and stable patients into a tsv
 ## Milestone 2
 Due Date: Tuesday November 23rd
 
-An initial completion of vignette. I will complete an entire first draft of analysis analyzed through the vignette. Complete the data analysis and begin to describe the analysis results.
+An initial completion of vignette. I will complete an entire first draft of analysis analyzed through the vignette, and begin to describe the analysis results.
 
 ## Deliverable
 Due Date: December 3rd
