@@ -1,4 +1,4 @@
-# final_project
+# Final Project Outline
 ## Title
 Differential Gene Expression in TCGA within Stage A Chronic Lymphocytic Leukemia comparing Progression and Stable using DeSEQ2
 ## Author
