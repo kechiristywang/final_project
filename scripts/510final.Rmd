@@ -1,0 +1,122 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+load data in R
+```{r}
+pasAnno <- read.table(file = '/Users/wangke/Desktop/final/seq.tsv', sep = '\t', header = TRUE) 
+```
+```{r}
+pasCts<-read.csv("/Users/wangke/Desktop/final/donor1.csv",row.names = 1)
+```
+
+
+Delete extra columns
+```{r}
+library(readxl)
+pasAnno1<-subset(pasAnno,select = c(1,8,10))
+pasCts1<-subset(pasCts,select = c(1,5,8,9))
+```
+
+
+Change data format (length data to width data)
+```{r}
+require(tidyverse)
+#data <- data <- iris[c(4,5)]
+dat <-  pasAnno1 %>% 
+  group_by(icgc_donor_id) %>%
+  mutate(index = row_number()) %>%
+  pivot_wider(names_from = icgc_donor_id, 
+              values_from = raw_read_count) %>%
+  select(-index)
+pasAnno2<-dat
+```
+
+
+Delete all NULL rows
+Delete donor columns with incomplete data
+```{r}
+pasAnno3<- filter(pasAnno2, pasAnno2$DO51966 !='NULL') 
+pasAnno4<- select(pasAnno3,-c(DO51973,DO6940,DO6635,DO6630,DO6625,DO6620,DO6730,DO6408,DO6406,DO6400,DO6454,DO6450,DO6452,DO6448,DO6444,DO6438,DO6430,DO6426,DO6422,DO6424,DO6498,DO6494,DO6488,DO6484,DO6486,DO6480,DO6482,DO6476,DO6478,DO6472,DO6474,DO6466,DO6464,DO6460,DO6531,DO6534,DO6525,DO6519,DO6516,DO6510,DO6507,DO6504,DO6501,DO6565,DO6561,DO6558,DO6555,DO6552,DO6546,DO6543,DO6585,DO6615,DO6374,DO6360,DO6356,DO6351,DO6396,DO6394,DO6390,DO7108,DO7136,DO7112,DO7048,DO7084,DO6760,DO6418))
+
+```
+
+
+save width data
+```{r}
+write.csv(pasAnno4, file = "/Users/wangke/Desktop/final/rawdata.csv", row.names = F, quote = F, na="0")
+```
+
+
+Delete all zero rows
+```{r}
+getwd()
+mycounts<-read.csv("/Users/wangke/Desktop/final/rawdata.csv",row.names = 1)
+mycounts_1 = mycounts[rowSums(mycounts) !=0,]
+#dim(mycounts)
+#im(mycounts_1)
+```
+
+
+Check the correspondence between the two files (Prepare for DESeq2)
+```{r}
+colnames(mycounts_1) == pasCts$icgc_donor_id
+```
+
+
+Install DESeq2
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+```
+
+
+load data in DESeq2 and calculate
+```{r}
+library("DESeq2")
+dds<-DESeqDataSetFromMatrix(countData = mycounts_1,
+                            colData = pasCts,
+                            design = ~donor_type)
+dds<-DESeq(dds)
+res<-results(dds)
+```
+
+
+check data in res
+```{r}
+head(res)
+class(res)
+```
+
+
+store res in a frame
+```{r}
+res1<-data.frame(res)
+#head(res1)
+#class(res1)
+```
+
+
+Calculation data with DESeq2
+```{r}
+library(dplyr)
+res2<-mutate(res1,group=case_when(log2FoldChange>=2&padj<=0.05 ~ "UP",log2FoldChange<=-2&padj<=0.05~"DOWN"))
+```
+
+
+check the number of UP and DOWN
+```{r}
+table(res2$group)
+```
+
+
+store the end of the calculation to next step
+```{r}
+write.csv(res2,file="/Users/wangke/Desktop/final/drawdata.csv",quote = F)
+```
+
+
