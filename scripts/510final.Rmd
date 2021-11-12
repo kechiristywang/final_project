@@ -6,10 +6,10 @@ output: html_notebook
 
 load data in R
 ```{r}
-pasAnno <- read.table(file = '/Users/wangke/Desktop/final/seq.tsv', sep = '\t', header = TRUE) 
+pasAnno <- read.table(file = '～/seq.tsv', sep = '\t', header = TRUE) 
 ```
 ```{r}
-pasCts<-read.csv("/Users/wangke/Desktop/final/donor1.csv",row.names = 1)
+pasCts<-read.csv("～/donor1.csv",row.names = 1)
 ```
 
 
@@ -46,14 +46,14 @@ pasAnno4<- select(pasAnno3,-c(DO51973,DO6940,DO6635,DO6630,DO6625,DO6620,DO6730,
 
 save width data
 ```{r}
-write.csv(pasAnno4, file = "/Users/wangke/Desktop/final/rawdata.csv", row.names = F, quote = F, na="0")
+write.csv(pasAnno4, file = "～/rawdata.csv", row.names = F, quote = F, na="0")
 ```
 
 
 Delete all zero rows
 ```{r}
 getwd()
-mycounts<-read.csv("/Users/wangke/Desktop/final/rawdata.csv",row.names = 1)
+mycounts<-read.csv("～/rawdata.csv",row.names = 1)
 mycounts_1 = mycounts[rowSums(mycounts) !=0,]
 #dim(mycounts)
 #im(mycounts_1)
@@ -116,13 +116,13 @@ table(res2$group)
 
 store the end of the calculation to next step
 ```{r}
-write.csv(res2,file="/Users/wangke/Desktop/final/drawdata.csv",quote = F)
+write.csv(res2,file="～/drawdata.csv",quote = F)
 ```
 
 
 Data processing and import for volcano plot
 ```{r}
-df<-read.csv("/Users/wangke/Desktop/final/drawdata.csv",header=T,stringsAsFactors=F)
+df<-read.csv("～/drawdata.csv",header=T,stringsAsFactors=F)
 df<- filter(df, df$padj !='NA') 
 head(df)
 dim(df)
