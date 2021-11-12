@@ -120,3 +120,50 @@ write.csv(res2,file="/Users/wangke/Desktop/final/drawdata.csv",quote = F)
 ```
 
 
+Data processing and import for volcano plot
+```{r}
+df<-read.csv("/Users/wangke/Desktop/final/drawdata.csv",header=T,stringsAsFactors=F)
+df<- filter(df, df$padj !='NA') 
+head(df)
+dim(df)
+```
+
+
+Tag UP and DOWN group
+```{r}
+df$group<-ifelse(df$log2FoldChange>=2&df$pvalue<=0.05,"Up",
+                  ifelse(df$log2FoldChange<=-2&df$pvalue<=0.05,
+                         "Down","Not sig"))
+```
+```{r}
+table(df$group)
+```
+Install ggrepel packages
+```{r}
+install.packages("ggrepel")
+```
+draw volcano plot
+```{r}
+library(ggplot2)
+library(ggrepel)
+ggplot(df,aes(x=log2FoldChange,y=-log10(pvalue)))+
+  geom_point(aes(color=group))+
+  scale_color_manual(values=c("dodgerblue","gray","firebrick"))
+df$pvalue_log10<-(-log10(df$pvalue))
+df1<-df[df$pvalue_log10>=10,]
+#dim(df1)
+```
+
+
+draw volcano plot with label
+```{r}
+ggplot(df,aes(x=log2FoldChange,y=-log10(pvalue)))+
+  geom_point(aes(color=group))+
+  scale_color_manual(values=c("dodgerblue","gray","firebrick"))+
+  geom_label_repel(data=df1,aes(x=log2FoldChange,y=-log10(pvalue),
+                          label=X))+
+  theme_bw()+
+  labs(y="-log10(pvalue)",x="log(Fold Change)")
+```
+
+
