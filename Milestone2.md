@@ -14,15 +14,19 @@ https://github.com/kechiristywang/final_project_of_Ke_Wang/blob/1221b4ec27b12579
 
 
 ## Section 2: Next Steps
-* I will make more plots based on my data. These plots will show the donor's gene based on disease stats, age, and gender.
+* I need to tidy up my final510.Rmd file. 
+* I need to run rlog() again. Because of the large amount of data, the rlog() function takes a lot of time to run.
+
 
 ## Section 3: Data 
-Not due by Milestone 1, but I'll address.
+Not due by Milestone 2, but I'll address.
 * My github will not hold my data about gene_id and Htseq_count. I will put my data in a shared GoogleDrive folder as a tar/zip file called finalproject.tar.gz which upon untaring with tar -xvzf finalproject.tar.gz will create a folder called data that contains all my data in a way that my script can operate off of.  This section will create a link that shared dataset.
 
 
 ## Section 4: Known Issues
-* Known issues: My current problem is that there is no correspondence between gene_names and gene_id. The parameters of the volcano map I drew need to be based on.
+* Part of the code is not successful, but it does not affect the plots. Due to the large amount of data, some functions (like rlog()) take a long time to run. I will try to run the unfinished code again.
+* There is no sufficient explanation in the code file now. I need to integrate the code and explain it in detail.
+* Some pictures are not beautiful enough. I need to change the markers of some pictures to make the coordinates of the pictures look concise.
 
 
 
