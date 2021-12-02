@@ -1,0 +1,137 @@
+---
+title: "step2_DESeq2_analyze"
+output: word_document
+---
+
+
+
+prepare data for the DESeq2
+```{r}
+rm(list = ls())
+counts0<-read.csv("counts.csv",row.names = 1)
+donor0<-read.csv("donor.csv",row.names = 1)
+#colnames(counts0) == donor0$icgc_donor_id
+```
+
+
+
+load data in DESeq2
+```{r}
+library("DESeq2")
+dds<-DESeqDataSetFromMatrix(countData = counts0,
+                            colData = donor0,
+                            design = ~donor_sex + donor_type + donor_age_at_diagnosis)
+```
+Pre-filtering: keep the data have more then 10 value in a raw
+```{r}
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+Note on factor levels：
+```{r}
+dds$donor_type <- factor(dds$donor_type, levels = c("progression","stable"))
+```
+
+```{r}
+dds<-DESeq(dds)
+res <- results(dds)
+```
+
+```{r}
+resultsNames(dds)
+```
+Shrinkage of effect size (LFC estimates) 
+```{r}
+resLFC <- lfcShrink(dds, coef="donor_type_stable_vs_progression", type="apeglm")
+```
+Speed-up and parallelization thoughts
+```{r}
+library("BiocParallel")
+register(MulticoreParam(4))
+```
+
+
+p-values and adjusted p-values
+```{r}
+resOrdered <- res[order(res$pvalue),]
+#summary(res)
+sum(res$padj < 0.1, na.rm=TRUE)
+sum(res$padj < 0.05, na.rm=TRUE) 
+```
+
+
+
+
+保存resOrdered到文件
+```{r}
+write.csv(as.data.frame(resOrdered), 
+          file="donor_type_stable_vs_progression.csv")
+```
+
+将p值的值定义为0.05
+查看特征
+```{r}
+res05 <- results(dds, alpha=0.05)
+#summary(res05)
+#sum(res05$padj < 0.05, na.rm=TRUE)
+```
+
+收塑过后做图
+```{r}
+plotMA(resLFC, ylim=c(-2,2))
+```
+
+
+counts
+
+```{r}
+d <- plotCounts(dds, gene=which.min(res$padj), intgroup="donor_type", 
+                returnData=TRUE)
+library("ggplot2")
+ggplot(d, aes(x=donor_type, y=count)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(25,100,400))
+```
+通过在结果对象上调用函数mcols可以找到有关使用了哪些变量和测试的信息
+```{r}
+mcols(res)$description
+```
+save data have p value less than 0.05
+```{r}
+resSig <- subset(resOrdered, padj < 0.05)
+write.csv(as.data.frame(resSig), 
+          file="donor_type_stable_vs_progression_0.05.csv")
+```
+
+```{r}
+vsd <- vst(dds, blind=FALSE)
+#head(assay(vsd), 3)
+```
+
+
+
+```{r}
+ntd <- normTransform(dds)
+library("vsn")
+meanSdPlot(assay(vsd))
+```
+
+```{r}
+library("pheatmap")
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+df <- as.data.frame(colData(dds)[,c("donor_type","donor_sex","donor_age_at_diagnosis")])
+pheatmap(assay(vsd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=df,show_colnames = FALSE)
+
+```
+```{r}
+pcaData <- plotPCA(vsd, intgroup=c("donor_type", "donor_sex"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_type, shape=donor_sex)) +
+  geom_point(size=3) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+
+```
