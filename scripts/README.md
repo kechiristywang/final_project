@@ -84,6 +84,7 @@
 (13) Draw heatmap of the sample-to-sample distances.
 
 *  The plot shows the differences between the samples, and the PAC plots will be used subsequently to determine whether the differences are due to donor type.
+
 ![image](https://user-images.githubusercontent.com/89613437/144578586-6469a5b1-39b5-4b1d-bd2d-856df4f37f9e.png)
 
 (14) Principal component plot of the samples (PCA plot)
