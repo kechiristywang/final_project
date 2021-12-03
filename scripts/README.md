@@ -58,6 +58,7 @@
 (8)draw MA-plot with apeglm.
 
 * The non-significantly different genes (grey) and the significantly different genes (blue) can be seen on the MA plot. They are symmetrically distributed on both sides of the straight line. The blue genes on the straight line are UP group, and the blue genes under the straight line are DOWN group.
+
 ![image](https://user-images.githubusercontent.com/89613437/144573283-f4c1954c-8901-435f-96ed-aca07b57c327.png)
 
 (9) Draw Plot counts with dds. Here I specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by row name or by numeric index.
