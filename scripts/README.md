@@ -110,7 +110,7 @@
 
 ![image](https://user-images.githubusercontent.com/89613437/144579192-d7094ad3-34e3-469a-b380-653d112c183d.png)
 
-(15) **Conclusion: The differences can be analyzed according to Htseq-counts, but the differences are not related to the variables I want to explore. I found that the expression differences were related to gender. In the following I will start a new analysis of stage A chronic lymphocytic leukemia according to gender.**
+**(15) Conclusion 1: The differences can be analyzed according to Htseq-counts, but the differences are not related to the variables I want to explore. I found that the expression differences were related to gender. In the following I will start a new analysis of stage A chronic lymphocytic leukemia according to gender.**
 
 
 
