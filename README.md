@@ -91,17 +91,48 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (1) Load data (donor information and Htseq-counts from last step and ICGC) in R for the DESeq2.
 
+```
+rm(list = ls())
+counts0<-read.csv("counts.csv",row.names = 1)
+donor0<-read.csv("donor.csv",row.names = 1)
+colnames(counts0) == donor0$icgc_donor_id
+```
+
 * The donor information in the two files corresponds.
 
 ![image](https://user-images.githubusercontent.com/89613437/144567249-e563d105-ac56-4fe2-a289-7f5c28ef74ab.png)
 
 (2)load data in DESeq2 (donor type, donor sex, and donor age at diagnosis).
 
+```
+library("DESeq2")
+dds<-DESeqDataSetFromMatrix(countData = counts0,
+                            colData = donor0,
+                            design = ~donor_sex + donor_type + donor_age_at_diagnosis)
+```
+
 (3)Pre-filtering: keep the data have more then 10 values in a raw.
+
+```
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
 
 (4)Note on factor levels (donor type).
 
+```
+dds$donor_type <- factor(dds$donor_type, levels = c("progression","stable"))
+```
+
 (5) Differential expression analysis and save data
+
+```
+dds<-DESeq(dds)
+res <- results(dds, alpha=0.05)
+write.csv(as.data.frame(res), 
+          file="donor_type_progression_stable.csv")
+head(res)
+```
 
 * res shows in picture. P value is also in the picture.
 
@@ -109,9 +140,27 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (6)Log fold change shrinkage for visualization and ranking by LFC estimates.
 
+```
+resultsNames(dds)
+resLFC <- lfcShrink(dds, coef="donor_type_stable_vs_progression", type="apeglm")
+sum(resLFC$padj < 0.05, na.rm=TRUE)
+sum(resLFC$padj < 0.01, na.rm=TRUE)
+```
+
 * There were 1364 P values of genes less than 0.05. There were 452 P values of genes less than 0.01.
 
 (7) draw MS plot with apeglm, normal, and ashr.
+
+```
+plotMA(res, ylim=c(-0.3,0.3))
+resNorm <- lfcShrink(dds, coef=2, type="normal")
+resAsh <- lfcShrink(dds, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(0.1,1e6); ylim <- c(-2,2)
+plotMA(resLFC, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh, xlim=xlim, ylim=ylim, main="ashr")
+```
 
 * The MA plot by res is not good.
 
@@ -123,11 +172,24 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (8)draw MA-plot with apeglm.
 
+```
+plotMA(resLFC, ylim=c(-2,2))
+```
+
 * The non-significantly different genes (grey) and the significantly different genes (blue) can be seen on the MA plot. They are symmetrically distributed on both sides of the straight line. The blue genes on the straight line are UP group, and the blue genes under the straight line are DOWN group.
 
 ![image](https://user-images.githubusercontent.com/89613437/144573283-f4c1954c-8901-435f-96ed-aca07b57c327.png)
 
 (9) Draw Plot counts with dds. Here I specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by row name or by numeric index.
+
+```
+d <- plotCounts(dds, gene=which.min(res$padj), intgroup="donor_type", 
+                returnData=TRUE)
+library("ggplot2")
+ggplot(d, aes(x=donor_type, y=count)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(50,500,5000))
+```
 
 * There was no significant difference in counts between the two groups of donors for the gene with the smallest P value.
 
@@ -135,7 +197,18 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (10) Extracting transformed values.
 
+```
+vsd <- vst(dds, blind=FALSE)
+ntd <- normTransform(dds)
+```
+
 (11) Effects of transformations on the variance.
+
+```
+library("vsn")
+meanSdPlot(assay(ntd))
+meanSdPlot(assay(vsd))
+```
 
 *  There is a significant change in the variance calculated by ntd.
 
@@ -147,17 +220,58 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (12) Draw heatmap of the count matrix. The heatmap shows the results of 139 donors and 20 genes. If you need to view specific genes, you can change [1:20].
 
+```
+library("pheatmap")
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+df <- as.data.frame(colData(dds)[,c("donor_type","donor_sex","donor_age_at_diagnosis")])
+pheatmap(assay(vsd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=df,show_colnames = FALSE)
+
+```
+
 *  The obvious difference in expression can be seen in the picture, but there is no obvious correlation with my variables. If you need to see specific genes, you can modify 1 and 20.
 
 ![image](https://user-images.githubusercontent.com/89613437/144576534-ac09014a-e880-4653-a86d-8334e2446d93.png)
 
 (13) Draw heatmap of the sample-to-sample distances.
 
+```
+sampleDists <- dist(t(assay(vsd)))
+library("RColorBrewer")
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(vsd$condition, vsd$type, sep="-")
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colors)
+```
+
 *  The plot shows the differences between the samples, and the PAC plots will be used subsequently to determine whether the differences are due to donor type.
 
 ![image](https://user-images.githubusercontent.com/89613437/144578586-6469a5b1-39b5-4b1d-bd2d-856df4f37f9e.png)
 
 (14) Principal component plot of the samples (PCA plot)
+
+```
+pcaData <- plotPCA(vsd, intgroup=c("donor_type", "donor_sex"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_sex, shape=donor_type)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+  
+  pcaData <- plotPCA(vsd, intgroup=c("donor_type", "donor_age_at_diagnosis"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_age_at_diagnosis, shape=donor_type)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+```
 
 *  PCA plot 1 (donor type and donor sex): The donor type in the plot did not show significant differences, but were divided into two groups based on gender.
 
@@ -173,7 +287,26 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (1)load data in R for the DESeq2.
 
+```
+rm(list = ls())
+counts0<-read.csv("counts.csv",row.names = 1)
+donor0<-read.csv("donor.csv",row.names = 1)
+```
+
 (2) Donor information is categorized by gender, and Htseq-counts are corresponded to donor information.
+
+```
+donor0<- donor0[order(donor0$donor_sex),]
+counts1<- t(counts0)
+counts1<- cbind(rownames(counts1), data.frame(counts1, row.names=NULL))
+counts1<- dplyr::rename(counts1, "icgc_donor_id" = "rownames(counts1)")
+counts2<- dplyr::select(donor0,c(icgc_donor_id))
+counts2<- dplyr::inner_join(counts2,counts1,by='icgc_donor_id')
+row.names(counts2) <- counts2[, 1]
+counts2<- counts2[, -1]
+counts2<- t(counts2)
+colnames(counts2) == donor0$icgc_donor_id
+```
 
 * The donor information in the two files corresponds.
 
@@ -181,11 +314,37 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (3)load data in DESeq2 (donor sex).
 
+```
+library("DESeq2")
+dds<-DESeqDataSetFromMatrix(countData = counts2,
+                            colData = donor0,
+                            design = ~donor_sex)
+```
+
 (4)Pre-filtering: keep the data have more then 10 values in a raw.
+
+```
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
 
 (5) Note on factor levels.
 
+```
+dds$donor_type <- factor(dds$donor_type, levels = c("male","female"))
+```
+
 (6) Differential expression analysis and save data
+
+```{r}
+dds<-DESeq(dds)
+res <- results(dds, alpha=0.05)
+resOrdered <- res[order(res$pvalue),]
+write.csv(as.data.frame(resOrdered), 
+          file="donor_sex_male_vs_female_p_order.csv")
+summary(res)
+sum(res$padj < 0.05, na.rm=TRUE)
+```
 
 * There were 24,300 genes analyzed. 117 genes had p-values less than 0.05.
 
@@ -193,11 +352,29 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (7)Log fold change shrinkage for visualization and ranking by LFC estimates.
 
+```
+resultsNames(dds)
+resLFC <- lfcShrink(dds, coef="donor_sex_male_vs_female", type="apeglm")
+summary(resLFC)
+sum(resLFC$padj < 0.05, na.rm=TRUE)
+```
+
 * After LFC estimates， the results do not change.
 
 ![image](https://user-images.githubusercontent.com/89613437/144683321-4cd637fd-77e9-42aa-940f-f28bd7bcce90.png)
 
 (8) draw MS plot with apeglm, normal, and ashr.
+
+```
+plotMA(res,  xlim=c(0.01,1e5), ylim=c(-10,15))
+#resNorm <- lfcShrink(dds, coef=2, type="normal")
+#resAsh <- lfcShrink(dds, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(0.1,1e6); ylim <- c(-1.5,1.5)
+plotMA(resLFC, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh, xlim=xlim, ylim=ylim, main="ashr")
+```
 
 * The MA plot by res is not perfect.
 
@@ -209,11 +386,24 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (9)draw MA-plot with ashr because it retains more functions and is suitable for handling large amounts of data.
 
+```{r}
+plotMA(resAsh,xlim=c(0.1,1e6), ylim=c(-6,6))
+```
+
 * This picture is not perfect, but it shows the difference genes clearly.
 
 ![image](https://user-images.githubusercontent.com/89613437/144683611-e04308de-13ff-4f81-9652-fe24b04884d5.png)
 
 (10) Draw Plot counts with dds. Here I specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by row name or by numeric index.
+
+```
+d <- plotCounts(dds, gene=which.min(res$padj), intgroup="donor_sex", 
+                returnData=TRUE)
+library("ggplot2")
+ggplot(d, aes(x=donor_sex, y=count)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(50,500,10000))
+```
 
 * It is clear from the figure that there are expression differences between the two groups. The male expression is significantly higher than the female. Some women do not even express this gene. Five males expressed significantly less than others because of individual differences, but all males expressed this gene.
 
@@ -221,7 +411,18 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (11)Extracting transformed values
 
+```
+vsd <- vst(dds, blind=FALSE)
+ntd <- normTransform(dds)
+```
+
 (12) Effects of transformations on the variance
+
+```
+library("vsn")
+meanSdPlot(assay(ntd))
+meanSdPlot(assay(vsd))
+```
 
 * There is a significant change in the variance calculated by ntd.
 
@@ -233,17 +434,52 @@ write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
 
 (13) Heatmap of the count matrix. The heatmap shows the results of 139 donors and 20 genes. If you need to view specific genes, you can change [626:645].
 
+```
+library("pheatmap")
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[626:645]
+df <- dplyr::select(donor0,c(icgc_donor_id,donor_sex))
+rownames(df) = df[,1]
+df<- dplyr::select(df,-c(icgc_donor_id))
+pheatmap(assay(vsd)[select,], cluster_rows=FALSE, show_rownames=T,
+         cluster_cols=FALSE, annotation_col=df, show_colnames = FALSE)
+
+```
+
 * The color of the DDX3Y gene and the sex of the donor in the figure have a corresponding relationship. There are 116 other similar genes. Other genes can be observed in the heatmap by modifying the code（626:645）.
 
 ![image](https://user-images.githubusercontent.com/89613437/144684190-5915f911-d68a-42a3-942a-a22eb087867b.png)
 
 (14) Heatmap of the sample-to-sample distances
 
+```
+sampleDists <- dist(t(assay(vsd)))
+library("RColorBrewer")
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(vsd$condition, vsd$type, sep="-")
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colors)
+```
+
 * The plot shows the differences between the samples. This difference is caused by gender.
 
 ![image](https://user-images.githubusercontent.com/89613437/144684622-0fc10989-c31e-4f25-b228-e4bae4253a95.png)
 
 (15) Principal component plot of the samples (PCA plot)
+
+```
+pcaData <- plotPCA(vsd, intgroup=c("donor_sex"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_sex)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+```
 
 * The data were clearly divided into two groups. One male was assigned to the female group, which may be due to his individuality. In the plot counts, there is a male and a female with similar data. This outlier is caused by the same person as the outlier in plot counts. The other five outliers are also caused by the same factors.
 
