@@ -10,6 +10,23 @@
 
 (1) load Htseq-counts data in R, and keep the required data. Change data format (length data to width data).
 
+```
+rm(list = ls())
+pasAnno <- read.table(file = 'seq.tsv', sep = '\t', header = TRUE) 
+pasAnno1<-subset(pasAnno,select = c(1,8,10))
+require(tidyverse)
+dat <-  pasAnno1 %>% 
+  group_by(icgc_donor_id) %>%
+  mutate(index = row_number()) %>%
+  pivot_wider(names_from = icgc_donor_id, 
+              values_from = raw_read_count) %>%
+  dplyr::select(-index)
+pasAnno2<-dat
+head(pasAnno)
+head(pasAnno1)
+head(pasAnno2)
+```
+
 * This is the raw RNA-seq data from the ICGC Data Portal.
 
 ![image](https://user-images.githubusercontent.com/89613437/144563579-f829d0bb-960c-430f-b660-5e2e143bb50a.png)
@@ -24,17 +41,51 @@
 
 (2) Delete invalid data (Delete all NULL rows, incomplete data, and all zero rows.)：
 
+```
+pasAnno3<- filter(pasAnno2, pasAnno2$DO51966 !='NULL') 
+pasAnno3<- dplyr::select(pasAnno3,-c(DO51973,DO6940,DO6635,DO6630,DO6625,DO6620,DO6730,DO6408,DO6406,DO6400,DO6454,DO6450,DO6452,DO6448,DO6444,DO6438,DO6430,DO6426,DO6422,DO6424,DO6498,DO6494,DO6488,DO6484,DO6486,DO6480,DO6482,DO6476,DO6478,DO6472,DO6474,DO6466,DO6464,DO6460,DO6531,DO6534,DO6525,DO6519,DO6516,DO6510,DO6507,DO6504,DO6501,DO6565,DO6561,DO6558,DO6555,DO6552,DO6546,DO6543,DO6585,DO6615,DO6374,DO6360,DO6356,DO6351,DO6396,DO6394,DO6390,DO7108,DO7136,DO7112,DO7048,DO7084,DO6760,DO6418))
+pasAnno4<-as.data.frame(pasAnno3)
+row.names(pasAnno4)<-pasAnno4[,1]
+pasAnno4<-pasAnno4[,-1]
+pasAnno4 = pasAnno4[rowSums(pasAnno4) !=0,]
+head(pasAnno4)
+```
+
 * The changes I made in this step are not displayed in the picture, but the columns changed.
 
 ![image](https://user-images.githubusercontent.com/89613437/144565828-b1c4906d-3519-446e-a354-012f3ea11854.png)
 
 (3) Change gene_id to symbol
 
+```
+pasAnno5<- cbind(rownames(pasAnno4), data.frame(pasAnno4, row.names=NULL))
+colnames(pasAnno5)[1] = 'gene_id'
+pasAnno5<-separate(pasAnno5,col=gene_id,into=c("ensembl_id","b"),sep="[.]" )
+pasAnno5<- dplyr::select(pasAnno5,-c(b))
+library(org.Hs.eg.db)
+#ls("package:org.Hs.eg.db")
+g2s<-toTable(org.Hs.egSYMBOL)
+g2e<-toTable(org.Hs.egENSEMBL)
+b<-merge(pasAnno5,g2e,by='ensembl_id',all.x=T)
+d<-merge(b,g2s,by='gene_id',all.x=T)
+d<-d[,c(142,2:141,1)]
+detach("package:org.Hs.eg.db");
+pasAnno6<- dplyr::select(d,-c(ensembl_id,gene_id))
+require(tidyverse)
+pasAnno6<- filter(pasAnno6, pasAnno6$symbol !='na') %>% 
+dplyr::distinct(symbol, .keep_all = TRUE)
+head(pasAnno6)
+```
+
 * Symbols were used to represent genes.
 
 ![image](https://user-images.githubusercontent.com/89613437/144566316-6ddb97a8-63b1-4a13-83c5-68897bc7773d.png)
 
 (4) Store the processed file for subsequent steps.
+
+```
+write.csv(pasAnno6, file = "counts.csv", row.names = F, quote = F)
+```
 
 ## Step 2: Using data in step 1 to analyse difference between two donor type (progression and stable). Draw MA plot, plot counts, variance plot, heatmap, sample-to-sample heatmap, and PCA plot.
 
