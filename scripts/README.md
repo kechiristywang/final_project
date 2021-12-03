@@ -112,8 +112,85 @@
 
 **(15) Conclusion 1: The differences can be analyzed according to Htseq-counts, but the differences are not related to the variables I want to explore. I found that the expression differences were related to gender. In the following I will start a new analysis of stage A chronic lymphocytic leukemia according to gender.**
 
+## Step 3: Using data in step 1 to analyse difference between two donor sex (male and female). Draw MA plot, plot counts, variance plot, heatmap, sample-to-sample heatmap, and PCA plot.
 
+(1)load data in R for the DESeq2.
 
+(2) Donor information is categorized by gender, and Htseq-counts are corresponded to donor information.
+
+* The donor information in the two files corresponds.
+
+![image](https://user-images.githubusercontent.com/89613437/144682587-d7f8e19d-ab89-463f-8f44-b4cd64933985.png)
+
+(3)load data in DESeq2 (donor sex).
+
+(4)Pre-filtering: keep the data have more then 10 values in a raw.
+
+(5) Note on factor levels.
+
+(6) Differential expression analysis and save data
+
+* There were 24,300 genes analyzed. 117 genes had p-values less than 0.05.
+
+![image](https://user-images.githubusercontent.com/89613437/144683189-f3536db1-73bc-40fe-8cb9-a3f9cca6d15e.png)
+
+(7)Log fold change shrinkage for visualization and ranking by LFC estimates.
+
+* After LFC estimates， the results do not change.
+
+![image](https://user-images.githubusercontent.com/89613437/144683321-4cd637fd-77e9-42aa-940f-f28bd7bcce90.png)
+
+(8) draw MS plot with apeglm, normal, and ashr.
+
+* The MA plot by res is not perfect.
+
+![image](https://user-images.githubusercontent.com/89613437/144683514-10a34260-bce7-4471-8159-da8dc869b680.png)
+
+* Using apeglm, normal, and ashr to imporve MA plot.
+
+![image](https://user-images.githubusercontent.com/89613437/144683564-9e6d0f9e-d5f0-4bf9-951b-408a140b1820.png)
+
+(9)draw MA-plot with ashr because it retains more functions and is suitable for handling large amounts of data.
+
+* This picture is not perfect, but it shows the difference genes clearly.
+
+![image](https://user-images.githubusercontent.com/89613437/144683611-e04308de-13ff-4f81-9652-fe24b04884d5.png)
+
+(10) Draw Plot counts with dds. Here I specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by row name or by numeric index.
+
+* It is clear from the figure that there are expression differences between the two groups. The male expression is significantly higher than the female. Some women do not even express this gene. Five males expressed significantly less than others because of individual differences, but all males expressed this gene.
+
+![image](https://user-images.githubusercontent.com/89613437/144683772-dd01b292-2f00-4a61-bf9e-0a8a5c1f1b45.png)
+
+(11)Extracting transformed values
+
+(12) Effects of transformations on the variance
+
+* There is a significant change in the variance calculated by ntd.
+
+![image](https://user-images.githubusercontent.com/89613437/144684065-ef52b24b-23fd-4587-9e05-431151db8fd4.png)
+
+* The variance calculated by vsd is stable. I picked vsd for subsequent steps.
+
+![image](https://user-images.githubusercontent.com/89613437/144684114-03ea4a7e-ec3f-4b70-8023-02a158b7c401.png)
+
+(13) Heatmap of the count matrix. The heatmap shows the results of 139 donors and 20 genes. If you need to view specific genes, you can change [626:645].
+
+* The color of the DDX3Y gene and the sex of the donor in the figure have a corresponding relationship. There are 116 other similar genes. Other genes can be observed in the heatmap by modifying the code（626:645）.
+
+![image](https://user-images.githubusercontent.com/89613437/144684190-5915f911-d68a-42a3-942a-a22eb087867b.png)
+
+(14) Heatmap of the sample-to-sample distances
+
+* The plot shows the differences between the samples. This difference is caused by gender.
+
+![image](https://user-images.githubusercontent.com/89613437/144684622-0fc10989-c31e-4f25-b228-e4bae4253a95.png)
+
+(15) Principal component plot of the samples (PCA plot)
+
+* The data were clearly divided into two groups. One male was assigned to the female group, which may be due to his individuality. In the plot counts, there is a male and a female with similar data. This outlier is caused by the same person as the outlier in plot counts. The other five outliers are also caused by the same factors.
+
+![image](https://user-images.githubusercontent.com/89613437/144684700-056e55ae-4e74-493b-8dba-a89a250a2897.png)
 
 
 
