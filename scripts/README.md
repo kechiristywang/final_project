@@ -1,4 +1,10 @@
+# Differential Gene Expression in TCGA within Stage A Chronic Lymphocytic Leukemia comparing Progression and Stable using DeSEQ2
 
+## Download Data
+
+* I used the data from https://dcc.icgc.org/search. Examining clinical data, there are 139 tumor samples, and 37 are defined by me as progression patients and 102 are identified as stable patients. The classification standard is the category data in the clinical data. All donor data is contained in the same file. Keep donor and seq files in all files for subsequent analysis. After the download was completed I removed extraneous information from the donor file, such as age at last follow-up. 
+
+![image](https://user-images.githubusercontent.com/89613437/144685483-feda143f-6846-4e0f-b2a7-ffbab55cc322.png)
 
 ## Step 1: Change the downloaded data format to a format suitable for DESesq2 analysis. Change gene_id to symbols.
 
