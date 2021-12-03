@@ -485,7 +485,7 @@ ggplot(pcaData, aes(PC1, PC2, color=donor_sex)) +
 
 ![image](https://user-images.githubusercontent.com/89613437/144684700-056e55ae-4e74-493b-8dba-a89a250a2897.png)
 
-
+**(16) Conclusion 2: There were 117 genes that produced significant differences between the two groups of men and women. Which of these genes are associated with chronic lymphocytic leukemia requires further analysis.**
 
 
 
