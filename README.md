@@ -489,13 +489,25 @@ ggplot(pcaData, aes(PC1, PC2, color=donor_sex)) +
 
 ## Evaluation genes
 
+(1) I will use the GSEA website to evaluate genes (https://www.gsea-msigdb.org/gsea/index.jsp). Genes with a p-value of 0 were  analyzed using the investigate gene sites. There were seven genes judged to have a p-value equal to 0: TXLNGY, PRKY, TTTY15, ZFY, KDM5D, USP9Y, DDX3Y, and EIF1AY. The results show that four of these genes and three gene sets overlap. There are two down-regulated genes in PTEN_DN.V2_DN [143]; two up-regulated genes in RELA_DN.V1_UP [149]; and two down-regulated genes in PGF_UP.V1_DN [190]. I will continue to find what DDX3Y, ZFY, USP9Y, and KDM5D affect on human.
 
+![image](https://user-images.githubusercontent.com/89613437/144692782-47e4de55-c73e-4685-820f-a05622653cce.png)
+
+![image](https://user-images.githubusercontent.com/89613437/144692793-c101356a-fbf7-43cf-aadb-27d7acf729b3.png)
+
+(2) Search Gene Sets: PTEN_DN.V2_DN [143], RELA_DN.V1_UP [149], and PGF_UP.V1_DN [190] are not related to blood cancers. Therefore, there was no data to determine in the GSEA study whether the genes I screened for were associated with chronic lymphocytic leukemia.
 
 ## Known Issues
 
+(1) The number of donors is relatively small.
 
+(2) The sample-to-sample heat map does not reflect much information.
+
+(3) I only selected the genes with the smallest p-values for analysis, and there are still some eligible genes that can be analyzed.
 
 ## Conclusions
+
+According to Inherited predisposition to chronic lymphocytic leukemia, CXCR4, SMAD7, and DAPK may cause chronic lymphocytic leukemia. Therefore, the genes I picked are not in the article. After I search the foctions of the genes, I believe that these genes are related to differences in expression between  male and female, and they are not related to chronic lymphocytic leukemia. This analysis is based on the fact that these genes are all highly expressed in males, but expressed in low or no amounts in females. On the GeneCards, DDX3Y, ZFY, USP9Y, and KDM5D are all related to the Y chromosome. Therefore, my htseq-counts data were divided in two group by gender not chronic lymphocytic leukemia.
 
 
 
