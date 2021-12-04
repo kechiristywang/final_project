@@ -1,0 +1,130 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+Step 2:
+Using data in step 1 to analyse difference between two donor type (progression and stable). Draw MA plot, plot counts, variance plot, heatmap, sample-to-sample heatmap, and PCA plot.
+
+(1)load data in R for the DESeq2.
+```{r}
+rm(list = ls())
+counts0<-read.csv("counts.csv",row.names = 1)
+donor0<-read.csv("donor.csv",row.names = 1)
+colnames(counts0) == donor0$icgc_donor_id
+```
+(2)load data in DESeq2 (donor type, donor sex, and donor age at diagnosis).
+```{r}
+library("DESeq2")
+dds<-DESeqDataSetFromMatrix(countData = counts0,
+                            colData = donor0,
+                            design = ~donor_sex + donor_type + donor_age_at_diagnosis)
+```
+(3)Pre-filtering: keep the data have more then 10 values in a raw.
+```{r}
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+```
+(4)Note on factor levels.
+```{r}
+dds$donor_type <- factor(dds$donor_type, levels = c("progression","stable"))
+```
+(5) Differential expression analysis and save data
+```{r}
+dds<-DESeq(dds)
+res <- results(dds, alpha=0.05)
+write.csv(as.data.frame(res), 
+          file="donor_type_progression_stable.csv")
+```
+```{r}
+head(res)
+```
+(6)Log fold change shrinkage for visualization and ranking by LFC estimates.
+```{r}
+resultsNames(dds)
+resLFC <- lfcShrink(dds, coef="donor_type_stable_vs_progression", type="apeglm")
+sum(resLFC$padj < 0.05, na.rm=TRUE)
+sum(resLFC$padj < 0.01, na.rm=TRUE)
+```
+(7) draw MS plot with apeglm, normal, and ashr.
+```{r}
+plotMA(res, ylim=c(-0.3,0.3))
+resNorm <- lfcShrink(dds, coef=2, type="normal")
+resAsh <- lfcShrink(dds, coef=2, type="ashr")
+par(mfrow=c(1,3), mar=c(4,4,2,1))
+xlim <- c(0.1,1e6); ylim <- c(-2,2)
+plotMA(resLFC, xlim=xlim, ylim=ylim, main="apeglm")
+plotMA(resNorm, xlim=xlim, ylim=ylim, main="normal")
+plotMA(resAsh, xlim=xlim, ylim=ylim, main="ashr")
+```
+(8)draw MA-plot with resLFC because it removes the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds.
+```{r}
+plotMA(resLFC, ylim=c(-2,2))
+```
+(9) Draw Plot counts with dds. Here I specify the gene which had the smallest p value from the results table created above. You can select the gene to plot by row name or by numeric index.
+```{r}
+d <- plotCounts(dds, gene=which.min(res$padj), intgroup="donor_type", 
+                returnData=TRUE)
+library("ggplot2")
+ggplot(d, aes(x=donor_type, y=count)) + 
+  geom_point(position=position_jitter(w=0.1,h=0)) + 
+  scale_y_log10(breaks=c(50,500,5000))
+```
+(10)Extracting transformed values
+```{r}
+vsd <- vst(dds, blind=FALSE)
+ntd <- normTransform(dds)
+```
+(11) Effects of transformations on the variance
+```{r}
+library("vsn")
+meanSdPlot(assay(ntd))
+```
+```{r}
+meanSdPlot(assay(vsd))
+```
+(12) Heatmap of the count matrix. The heatmap shows the results of 139 donors and 20 genes. If you need to view specific genes, you can change [1:20].
+```{r}
+library("pheatmap")
+select <- order(rowMeans(counts(dds,normalized=TRUE)),
+                decreasing=TRUE)[1:20]
+df <- as.data.frame(colData(dds)[,c("donor_type","donor_sex","donor_age_at_diagnosis")])
+pheatmap(assay(vsd)[select,], cluster_rows=FALSE, show_rownames=FALSE,
+         cluster_cols=FALSE, annotation_col=df,show_colnames = FALSE)
+
+```
+(13) Heatmap of the sample-to-sample distances
+```{r}
+sampleDists <- dist(t(assay(vsd)))
+library("RColorBrewer")
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- paste(vsd$condition, vsd$type, sep="-")
+colnames(sampleDistMatrix) <- NULL
+colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=colors)
+```
+
+(14) Principal component plot of the samples (PCA plot)
+PCA plot 1 (donor type and donor sex)
+```{r}
+pcaData <- plotPCA(vsd, intgroup=c("donor_type", "donor_sex"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_sex, shape=donor_type)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+```
+PCA plot 2 (donor type and donor age at diagnosis)
+```{r}
+pcaData <- plotPCA(vsd, intgroup=c("donor_type", "donor_age_at_diagnosis"), returnData=TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color=donor_age_at_diagnosis, shape=donor_type)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+```
+
