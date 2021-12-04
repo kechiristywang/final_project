@@ -38,6 +38,8 @@ install.packages("pheatmap")
 ```
 
 
+
+
 (1) load Htseq-counts data in R, and keep the required data. Change data format (length data to width data).
 
 ```
