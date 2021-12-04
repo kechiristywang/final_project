@@ -10,6 +10,34 @@
 
 ## Step 1: Change the downloaded data format to a format suitable for DESesq2 analysis. Change gene_id to symbols.
 
+Packages that need to be installed in advance：
+
+install packages ggplot2 in R
+```
+install.packages("ggplot2")
+```
+install packages DESeq2, org.Hs.eg.db, apeglm, IHW, and vsn in R
+```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+BiocManager::install("org.Hs.eg.db")
+BiocManager::install("apeglm")
+BiocManager::install("IHW")
+BiocManager::install("vsn")
+```
+install packages ashr in R
+```
+install.packages("devtools")
+install_github("stephens999/ashr")
+```
+install packages pheatmap in R
+```
+install.packages("pheatmap")
+```
+
+
 (1) load Htseq-counts data in R, and keep the required data. Change data format (length data to width data).
 
 ```
