@@ -4,7 +4,7 @@
 
 * I used the data from https://dcc.icgc.org/search. Examining clinical data, there are 139 tumor samples, and 37 are defined by me as progression patients and 102 are identified as stable patients. The classification standard is the category data in the clinical data. All donor data is contained in the same file. Keep donor and seq files in all files for subsequent analysis. After the download was completed I removed extraneous information from the donor file, such as age at last follow-up. 
 
-* The raw data I used and the data I got are in the Data folder, but one of the raw files cannot be uploaded to Github. I will use the Google Drive to share my files. [Here is the link to Google Drive.](https://drive.google.com/drive/folders/1vO7PULg_fK82M5A3ZRaQFXb1fVS_e0zy?usp=sharing)
+* The raw data I used and the data I got are in the Data folder, but one of the raw files cannot be uploaded to Github. I used the Google Drive to share my files. [Here is the link to Google Drive.](https://drive.google.com/drive/folders/1vO7PULg_fK82M5A3ZRaQFXb1fVS_e0zy?usp=sharing)
 
 ![image](https://user-images.githubusercontent.com/89613437/144685483-feda143f-6846-4e0f-b2a7-ffbab55cc322.png)
 
