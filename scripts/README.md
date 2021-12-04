@@ -1,4 +1,4 @@
-# How to used the Rmd and files
+# How to use this folder
 
 ## Rmd
 
@@ -10,5 +10,7 @@
 * One of the original files cannot be uploaded to Github, so I created a Google Drive to store all the files.
 [Google Drive link](https://drive.google.com/drive/folders/1vO7PULg_fK82M5A3ZRaQFXb1fVS_e0zy?usp=sharing)
 
+## final_project_of_Ke_Wang/scripts/pictures_and_plots/
 
+* It incolude the pictures and plots in main/README.md.
 
