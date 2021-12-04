@@ -539,7 +539,7 @@ ggplot(pcaData, aes(PC1, PC2, color=donor_sex)) +
 
 ## Conclusions
 
-According to Inherited predisposition to chronic lymphocytic leukemia, CXCR4, SMAD7, and DAPK may cause chronic lymphocytic leukemia. Therefore, the genes I picked are not in the article. After I search the foctions of the genes, I believe that these genes are related to differences in expression between  male and female, and they are not related to chronic lymphocytic leukemia. This analysis is based on the fact that these genes are all highly expressed in males, but expressed in low or no amounts in females. On the GeneCards, DDX3Y, ZFY, USP9Y, and KDM5D are all related to the Y chromosome. Therefore, my htseq-counts data were divided in two group by gender not chronic lymphocytic leukemia.
+According to Inherited predisposition to chronic lymphocytic leukemia, CXCR4, SMAD7, and DAPK may cause chronic lymphocytic leukemia. Therefore, the genes I picked are not in the article. After I search the foctions of the genes, I believe that these genes are related to differences in expression between  male and female, and they are not related to chronic lymphocytic leukemia. This guess is based on the fact that these genes are all highly expressed in males, but expressed in low or no amounts in females. On the GeneCards, DDX3Y, ZFY, USP9Y, and KDM5D are all related to the Y chromosome. Therefore, my htseq-counts data were divided in two groups by gender not chronic lymphocytic leukemia.
 
 
 
