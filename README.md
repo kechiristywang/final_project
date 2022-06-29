@@ -1,4 +1,4 @@
-# Differential Gene Expression in TCGA within Stage A Chronic Lymphocytic Leukemia comparing Progression and Stable using DeSEQ2
+# Differential Gene Expression in TCGA within Stage A Chronic Lymphocytic Leukemia comparing Progression and Stable using DEseq2
 
 ## Download Data
 
